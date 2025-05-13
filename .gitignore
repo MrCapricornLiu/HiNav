@@ -1,4 +1,8 @@
 .idea/
 **/*.pyc
 
-log/
+
+output/ckpts/*
+output/logs/*
+output/preds/*
+output/vis/*

@@ -136,19 +136,32 @@ class OneStagePromptManager(object):
 
         # trajectory and map connectivity
         for node in trajectory:
+            # Check if node exists in nodes_list before getting index
+            if node not in nodes_list:
+                # This case should ideally not happen if nodes_list is managed correctly
+                # print(f"Warning: Node {node} from trajectory not found in nodes_list.")
+                continue
             node_index = nodes_list.index(node)
             trajectory_text += f""" {node_index}"""
 
-            if node not in no_dup_nodes:
+            # Check if the node exists as a key in the graph (it might have been pruned)
+            # AND ensure we haven't processed this node's connectivity already
+            if node in graph and node not in no_dup_nodes:
                 no_dup_nodes.append(node)
 
                 adj_text = ''
+                # Access adjacent_nodes only if the node is in the graph
                 adjacent_nodes = graph[node]
                 for adj_node in adjacent_nodes:
-                    adj_index = nodes_list.index(adj_node)
-                    adj_text += f""" {adj_index},"""
+                    # Also ensure the adjacent node is known in nodes_list
+                    if adj_node in nodes_list:
+                        adj_index = nodes_list.index(adj_node)
+                        adj_text += f""" {adj_index},"""
 
-                graph_text += f"""\nPlace {node_index} is connected with Places{adj_text}"""[:-1]
+                # Only add graph text if there were valid adjacent nodes found
+                if adj_text: 
+                    graph_text += f"""\nPlace {node_index} is connected with Places{adj_text}"""[:-1]
+            # If node is not in graph, we simply don't add connectivity info for it.
 
         # ghost nodes info
         graph_supp_text = ''
